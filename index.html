@@ -1,14 +1,15 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>monika · nang</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
     body {
       background: #1a3e3f;
@@ -17,70 +18,72 @@
       align-items: center;
       min-height: 100vh;
       font-family: 'Segoe UI', 'Courier New', monospace;
+      padding: 8px;
+      touch-action: pan-x pan-y;
     }
     .frame {
       background: #2c5e5e;
-      padding: 20px 20px 20px 20px;
-      border-radius: 48px 48px 24px 24px;
+      padding: 12px;
+      border-radius: 36px 36px 24px 24px;
       box-shadow: 0 20px 30px rgba(0,0,0,0.5);
-      width: fit-content;
+      width: 100%;
+      max-width: 500px;
       margin: 0 auto;
     }
     .pond-container {
       position: relative;
-      border-radius: 32px;
+      border-radius: 28px;
       overflow: hidden;
       box-shadow: inset 0 0 20px #0e2a2a;
+      width: 100%;
+      aspect-ratio: 500 / 400;
     }
     canvas {
       display: block;
       width: 100%;
-      height: auto;
+      height: 100%;
       background: radial-gradient(circle at 50% 40%, #1f6f5e, #15423b);
-      cursor: crosshair;
+      cursor: pointer;
+      touch-action: none;
     }
   </style>
 </head>
 <body>
 <div class="frame">
   <div class="pond-container">
-    <canvas id="pondCanvas" width="1000" height="600"></canvas>
+    <canvas id="pondCanvas" width="500" height="400"></canvas>
   </div>
 </div>
 <script>
   const canvas = document.getElementById('pondCanvas');
   const ctx = canvas.getContext('2d');
 
-  // make canvas full width display but keep ratio
-  canvas.style.width = '1000px';
-  canvas.style.height = '600px';
-
-  // ----------  LEAVES ----------
+  // ----------  LEAVES - ADAPTED FOR SMALLER CANVAS ----------
   const leaves = [];
-  const LEAVES_COUNT = 45;
+  const LEAVES_COUNT = 30;
 
   for (let i = 0; i < LEAVES_COUNT; i++) {
     leaves.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: 12 + Math.random() * 24,
-      speedX: 0.02 + Math.random() * 0.05,
-      speedY: 0.015 + Math.random() * 0.04,
+      size: 8 + Math.random() * 14,
+      speedX: 0.015 + Math.random() * 0.04,
+      speedY: 0.01 + Math.random() * 0.03,
       rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.0015,
+      rotSpeed: (Math.random() - 0.5) * 0.0012,
       opacity: 0.5 + Math.random() * 0.3,
       color: `rgba(${200 + Math.floor(Math.random()*35)}, ${125 + Math.floor(Math.random()*30)}, ${85 + Math.floor(Math.random()*30)}, 0.6)`
     });
   }
 
-  // ----------  FISH ----------
+  // ----------  FISH - SMALLER FOR MOBILE ----------
   let monika = {
-    x: 550, y: 300,
+    x: 280, y: 200,
     vx: 0, vy: 0,
     angle: 1.8,
     targetAngle: 1.8,
-    targetX: 600, targetY: 270,
-    bodyLength: 48,
+    targetX: 300, targetY: 180,
+    bodyLength: 32,
     tailPhase: 0,
     name: 'Monika',
     messageTimer: 0,
@@ -88,11 +91,11 @@
   };
 
   let nang = {
-    x: 490, y: 280,
+    x: 240, y: 185,
     vx: 0, vy: 0,
     angle: 1.7,
     targetAngle: 1.7,
-    bodyLength: 44,
+    bodyLength: 28,
     tailPhase: 0,
     name: 'Nang',
     messageTimer: 0,
@@ -118,7 +121,7 @@
     "ot kiss pd oun eng heh"
   ];
 
-  // ----------  MONIKA'S 12 LINES - NEW ONES ADDED ----------
+  // ----------  MONIKA'S 12 LINES ----------
   const monikaMessages = [
     "bork oun tt hz",
     "lie oun sos ng",
@@ -134,21 +137,21 @@
     "kom mk bork oun hr"
   ];
 
-  // monika's targets
+  // monika's targets - closer together for mobile
   function setNewMonikaTarget() {
-    monika.targetX = 80 + Math.random() * (canvas.width - 160);
-    monika.targetY = 80 + Math.random() * (canvas.height - 160);
+    monika.targetX = 60 + Math.random() * (canvas.width - 120);
+    monika.targetY = 50 + Math.random() * (canvas.height - 100);
   }
   setNewMonikaTarget();
-  setInterval(setNewMonikaTarget, 5000);
+  setInterval(setNewMonikaTarget, 4800);
 
-  // ----------  REAL FISH FOLLOWING ----------
-  const TURN_SPEED = 0.018;
-  const MONIKA_SPEED = 0.48;
+  // ----------  REAL FISH FOLLOWING - ADJUSTED FOR SMALLER SCALE ----------
+  const TURN_SPEED = 0.016;
+  const MONIKA_SPEED = 0.42;
   
-  const IDEAL_DISTANCE = 65;
-  const TOO_CLOSE = 38;
-  const FOLLOW_STRENGTH = 0.006;
+  const IDEAL_DISTANCE = 45;
+  const TOO_CLOSE = 28;
+  const FOLLOW_STRENGTH = 0.0055;
   
   function smoothSwim() {
     // ----- MONIKA -----
@@ -171,13 +174,13 @@
     monika.y += monika.vy;
     
     // boundaries
-    if (monika.x < 50) { monika.vx += 0.08; monika.targetX = canvas.width - 200; }
-    if (monika.x > canvas.width - 50) { monika.vx -= 0.08; monika.targetX = 200; }
-    if (monika.y < 50) { monika.vy += 0.08; monika.targetY = canvas.height - 200; }
-    if (monika.y > canvas.height - 50) { monika.vy -= 0.08; monika.targetY = 200; }
+    if (monika.x < 35) { monika.vx += 0.08; monika.targetX = canvas.width - 80; }
+    if (monika.x > canvas.width - 35) { monika.vx -= 0.08; monika.targetX = 80; }
+    if (monika.y < 35) { monika.vy += 0.08; monika.targetY = canvas.height - 80; }
+    if (monika.y > canvas.height - 35) { monika.vy -= 0.08; monika.targetY = 80; }
     
-    monika.x = Math.min(Math.max(monika.x, 45), canvas.width - 45);
-    monika.y = Math.min(Math.max(monika.y, 45), canvas.height - 45);
+    monika.x = Math.min(Math.max(monika.x, 35), canvas.width - 35);
+    monika.y = Math.min(Math.max(monika.y, 35), canvas.height - 35);
     
     // monika turn
     if (Math.hypot(monika.vx, monika.vy) > 0.1) {
@@ -199,27 +202,27 @@
       // if too far, move closer
       if (distN > IDEAL_DISTANCE) {
         let pull = FOLLOW_STRENGTH * (distN / IDEAL_DISTANCE);
-        nang.vx += normXN * pull * distN * 0.18;
-        nang.vy += normYN * pull * distN * 0.18;
+        nang.vx += normXN * pull * distN * 0.16;
+        nang.vy += normYN * pull * distN * 0.16;
       }
       
       // if too close, move away
       if (distN < TOO_CLOSE) {
-        let push = 0.1 * (1 - distN / TOO_CLOSE);
+        let push = 0.08 * (1 - distN / TOO_CLOSE);
         nang.vx -= normXN * push;
         nang.vy -= normYN * push;
       }
       
       // at good distance, gentle speed match
       if (distN >= TOO_CLOSE && distN <= IDEAL_DISTANCE) {
-        nang.vx += (monika.vx * 0.35 - nang.vx) * 0.02;
-        nang.vy += (monika.vy * 0.35 - nang.vy) * 0.02;
+        nang.vx += (monika.vx * 0.3 - nang.vx) * 0.018;
+        nang.vy += (monika.vy * 0.3 - nang.vy) * 0.018;
       }
     }
     
     // individual movement
-    nang.vx += Math.sin(Date.now() * 0.001 + nang.x) * 0.007;
-    nang.vy += Math.cos(Date.now() * 0.0011 + nang.y) * 0.007;
+    nang.vx += Math.sin(Date.now() * 0.001 + nang.x) * 0.006;
+    nang.vy += Math.cos(Date.now() * 0.0011 + nang.y) * 0.006;
     
     // damping
     nang.vx *= 0.98;
@@ -229,8 +232,8 @@
     nang.y += nang.vy;
     
     // boundaries
-    nang.x = Math.min(Math.max(nang.x, 45), canvas.width - 45);
-    nang.y = Math.min(Math.max(nang.y, 45), canvas.height - 45);
+    nang.x = Math.min(Math.max(nang.x, 35), canvas.width - 35);
+    nang.y = Math.min(Math.max(nang.y, 35), canvas.height - 35);
     
     // nang turn
     if (Math.hypot(nang.vx, nang.vy) > 0.1) {
@@ -238,12 +241,12 @@
       let angleDiffN = nang.targetAngle - nang.angle;
       while (angleDiffN > Math.PI) angleDiffN -= Math.PI * 2;
       while (angleDiffN < -Math.PI) angleDiffN += Math.PI * 2;
-      nang.angle += angleDiffN * 0.018;
+      nang.angle += angleDiffN * 0.016;
     }
     
     // tails
-    monika.tailPhase = (monika.tailPhase + 0.12) % (Math.PI * 2);
-    nang.tailPhase = (nang.tailPhase + 0.14) % (Math.PI * 2);
+    monika.tailPhase = (monika.tailPhase + 0.1) % (Math.PI * 2);
+    nang.tailPhase = (nang.tailPhase + 0.12) % (Math.PI * 2);
     
     // ----- BOTH FISH SPEAK -----
     // Nang speaks
@@ -251,7 +254,7 @@
     if (nang.messageTimer <= 0) {
       let msgIndex = Math.floor(Math.random() * nangMessages.length);
       nang.currentMessage = nangMessages[msgIndex];
-      nang.messageTimer = 80 + Math.floor(Math.random() * 60);
+      nang.messageTimer = 70 + Math.floor(Math.random() * 50);
     }
     
     // Monika speaks
@@ -259,7 +262,7 @@
     if (monika.messageTimer <= 0) {
       let msgIndex = Math.floor(Math.random() * monikaMessages.length);
       monika.currentMessage = monikaMessages[msgIndex];
-      monika.messageTimer = 100 + Math.floor(Math.random() * 70);
+      monika.messageTimer = 90 + Math.floor(Math.random() * 60);
     }
   }
 
@@ -278,17 +281,17 @@
       l.y += l.speedY;
       l.rotation += l.rotSpeed;
       
-      if (l.x > canvas.width + 60) l.x = -60;
-      if (l.x < -60) l.x = canvas.width + 60;
-      if (l.y > canvas.height + 60) l.y = -60;
-      if (l.y < -60) l.y = canvas.height + 60;
+      if (l.x > canvas.width + 40) l.x = -40;
+      if (l.x < -40) l.x = canvas.width + 40;
+      if (l.y > canvas.height + 40) l.y = -40;
+      if (l.y < -40) l.y = canvas.height + 40;
       
       ctx.save();
       ctx.translate(l.x, l.y);
       ctx.rotate(l.rotation);
       ctx.globalAlpha = l.opacity * 0.8;
       ctx.fillStyle = l.color;
-      ctx.shadowBlur = 6;
+      ctx.shadowBlur = 4;
       ctx.shadowColor = 'rgba(80, 40, 20, 0.2)';
       
       ctx.beginPath();
@@ -304,11 +307,11 @@
     ctx.translate(monika.x, monika.y);
     ctx.rotate(monika.angle);
     
-    let gradient = ctx.createLinearGradient(-16, -6, 16, 6);
+    let gradient = ctx.createLinearGradient(-12, -5, 12, 5);
     gradient.addColorStop(0, '#ffaa80');
     gradient.addColorStop(1, '#ff8c69');
     ctx.fillStyle = gradient;
-    ctx.shadowBlur = 16;
+    ctx.shadowBlur = 12;
     ctx.shadowColor = 'rgba(255, 140, 100, 0.5)';
     
     ctx.beginPath();
@@ -316,29 +319,29 @@
     ctx.fill();
     
     ctx.fillStyle = '#ff7f50';
-    ctx.shadowBlur = 14;
+    ctx.shadowBlur = 10;
     ctx.beginPath();
-    ctx.moveTo(-monika.bodyLength/2 + 5, -2);
-    ctx.lineTo(-monika.bodyLength/2 - 14 + Math.sin(monika.tailPhase) * 3.5, -12);
-    ctx.lineTo(-monika.bodyLength/2 - 14 + Math.cos(monika.tailPhase) * 3, 12);
+    ctx.moveTo(-monika.bodyLength/2 + 4, -2);
+    ctx.lineTo(-monika.bodyLength/2 - 10 + Math.sin(monika.tailPhase) * 2.5, -9);
+    ctx.lineTo(-monika.bodyLength/2 - 10 + Math.cos(monika.tailPhase) * 2, 9);
     ctx.closePath();
     ctx.fill();
     
     ctx.shadowBlur = 2;
     ctx.beginPath();
-    ctx.arc(monika.bodyLength/5, -2.5, 2.8, 0, 2 * Math.PI);
+    ctx.arc(monika.bodyLength/5, -2, 2.2, 0, 2 * Math.PI);
     ctx.fillStyle = '#1e1e2a';
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(monika.bodyLength/5 + 1.1, -2.8, 1.1, 0, 2*Math.PI);
+    ctx.arc(monika.bodyLength/5 + 0.8, -2.4, 0.9, 0, 2*Math.PI);
     ctx.fillStyle = 'white';
     ctx.fill();
     
-    // MONIKA NAME
-    ctx.shadowBlur = 8;
-    ctx.font = 'bold 18px "Courier New", monospace';
+    // MONIKA NAME - smaller for mobile
+    ctx.shadowBlur = 6;
+    ctx.font = 'bold 14px "Courier New", monospace';
     ctx.fillStyle = '#fff9f0';
-    ctx.fillText('🌸 Monika', 28, -35);
+    ctx.fillText('🌸 Monika', 20, -28);
     
     ctx.restore();
     
@@ -347,11 +350,11 @@
     ctx.translate(nang.x, nang.y);
     ctx.rotate(nang.angle);
     
-    let gradientN = ctx.createLinearGradient(-14, -5, 14, 5);
+    let gradientN = ctx.createLinearGradient(-10, -4, 10, 4);
     gradientN.addColorStop(0, '#6aaac9');
     gradientN.addColorStop(1, '#4682b4');
     ctx.fillStyle = gradientN;
-    ctx.shadowBlur = 16;
+    ctx.shadowBlur = 12;
     ctx.shadowColor = 'rgba(70, 130, 180, 0.5)';
     
     ctx.beginPath();
@@ -360,118 +363,118 @@
     
     ctx.fillStyle = '#2e5e7e';
     ctx.beginPath();
-    ctx.moveTo(-nang.bodyLength/2 + 5, -2);
-    ctx.lineTo(-nang.bodyLength/2 - 15 + Math.sin(nang.tailPhase) * 3.5, -11);
-    ctx.lineTo(-nang.bodyLength/2 - 15 + Math.cos(nang.tailPhase) * 3, 11);
+    ctx.moveTo(-nang.bodyLength/2 + 4, -2);
+    ctx.lineTo(-nang.bodyLength/2 - 11 + Math.sin(nang.tailPhase) * 2.5, -8);
+    ctx.lineTo(-nang.bodyLength/2 - 11 + Math.cos(nang.tailPhase) * 2, 8);
     ctx.closePath();
     ctx.fill();
     
     ctx.shadowBlur = 2;
     ctx.beginPath();
-    ctx.arc(nang.bodyLength/5, -2.3, 2.5, 0, 2 * Math.PI);
+    ctx.arc(nang.bodyLength/5, -2, 2.0, 0, 2 * Math.PI);
     ctx.fillStyle = '#151525';
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(nang.bodyLength/5 + 0.9, -2.8, 0.9, 0, 2*Math.PI);
+    ctx.arc(nang.bodyLength/5 + 0.7, -2.4, 0.7, 0, 2*Math.PI);
     ctx.fillStyle = 'white';
     ctx.fill();
     
-    // NANG NAME
-    ctx.shadowBlur = 8;
-    ctx.font = 'bold 18px "Courier New", monospace';
+    // NANG NAME - smaller for mobile
+    ctx.shadowBlur = 6;
+    ctx.font = 'bold 14px "Courier New", monospace';
     ctx.fillStyle = '#fff5e6';
-    ctx.fillText('💙 Nang', -65, -40);
+    ctx.fillText('💙 Nang', -48, -32);
     
     ctx.restore();
     
-    // ----- MONIKA'S SPEECH BUBBLE -----
+    // ----- MONIKA'S SPEECH BUBBLE - SMALLER FOR MOBILE -----
     if (monika.currentMessage && monika.messageTimer > 0) {
       ctx.save();
       
       let bubbleX = monika.x;
-      let bubbleY = monika.y - 90;
+      let bubbleY = monika.y - 70;
       
-      ctx.font = '16px "Courier New", monospace';
+      ctx.font = '13px "Courier New", monospace';
       let textWidth = ctx.measureText(monika.currentMessage).width;
-      let bubbleWidth = Math.max(textWidth + 32, 220);
-      let bubbleHeight = 46;
+      let bubbleWidth = Math.max(textWidth + 24, 180);
+      let bubbleHeight = 36;
       
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 10;
       ctx.shadowColor = 'rgba(0,0,0,0.3)';
       ctx.fillStyle = 'rgba(255, 240, 240, 0.98)';
       ctx.strokeStyle = '#ffb7c5';
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 2;
       
       ctx.beginPath();
-      ctx.roundRect(bubbleX - bubbleWidth/2, bubbleY - bubbleHeight/2, bubbleWidth, bubbleHeight, 24);
+      ctx.roundRect(bubbleX - bubbleWidth/2, bubbleY - bubbleHeight/2, bubbleWidth, bubbleHeight, 18);
       ctx.fill();
       ctx.stroke();
       
       ctx.beginPath();
-      ctx.moveTo(bubbleX - 14, bubbleY + bubbleHeight/2 - 2);
-      ctx.lineTo(bubbleX, bubbleY + bubbleHeight/2 + 18);
-      ctx.lineTo(bubbleX + 14, bubbleY + bubbleHeight/2 - 2);
+      ctx.moveTo(bubbleX - 10, bubbleY + bubbleHeight/2 - 2);
+      ctx.lineTo(bubbleX, bubbleY + bubbleHeight/2 + 14);
+      ctx.lineTo(bubbleX + 10, bubbleY + bubbleHeight/2 - 2);
       ctx.fillStyle = 'rgba(255, 240, 240, 0.98)';
       ctx.fill();
       
       ctx.shadowBlur = 0;
       ctx.fillStyle = '#4a2a3a';
-      ctx.font = 'bold 16px "Courier New", monospace';
-      ctx.fillText(monika.currentMessage, bubbleX - textWidth/2, bubbleY + 8);
+      ctx.font = 'bold 13px "Courier New", monospace';
+      ctx.fillText(monika.currentMessage, bubbleX - textWidth/2, bubbleY + 6);
       
       ctx.restore();
     }
     
-    // ----- NANG'S SPEECH BUBBLE -----
+    // ----- NANG'S SPEECH BUBBLE - SMALLER FOR MOBILE -----
     if (nang.currentMessage && nang.messageTimer > 0) {
       ctx.save();
       
       let bubbleX = nang.x;
-      let bubbleY = nang.y - 90;
+      let bubbleY = nang.y - 70;
       
-      ctx.font = '16px "Courier New", monospace';
+      ctx.font = '13px "Courier New", monospace';
       let textWidth = ctx.measureText(nang.currentMessage).width;
-      let bubbleWidth = Math.max(textWidth + 32, 260);
-      let bubbleHeight = 46;
+      let bubbleWidth = Math.max(textWidth + 24, 200);
+      let bubbleHeight = 36;
       
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 10;
       ctx.shadowColor = 'rgba(0,0,0,0.3)';
       ctx.fillStyle = 'rgba(235, 245, 255, 0.98)';
       ctx.strokeStyle = '#a5c5ff';
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 2;
       
       ctx.beginPath();
-      ctx.roundRect(bubbleX - bubbleWidth/2, bubbleY - bubbleHeight/2, bubbleWidth, bubbleHeight, 24);
+      ctx.roundRect(bubbleX - bubbleWidth/2, bubbleY - bubbleHeight/2, bubbleWidth, bubbleHeight, 18);
       ctx.fill();
       ctx.stroke();
       
       ctx.beginPath();
-      ctx.moveTo(bubbleX - 14, bubbleY + bubbleHeight/2 - 2);
-      ctx.lineTo(bubbleX, bubbleY + bubbleHeight/2 + 18);
-      ctx.lineTo(bubbleX + 14, bubbleY + bubbleHeight/2 - 2);
+      ctx.moveTo(bubbleX - 10, bubbleY + bubbleHeight/2 - 2);
+      ctx.lineTo(bubbleX, bubbleY + bubbleHeight/2 + 14);
+      ctx.lineTo(bubbleX + 10, bubbleY + bubbleHeight/2 - 2);
       ctx.fillStyle = 'rgba(235, 245, 255, 0.98)';
       ctx.fill();
       
       ctx.shadowBlur = 0;
       ctx.fillStyle = '#2a3a4a';
-      ctx.font = 'bold 16px "Courier New", monospace';
-      ctx.fillText(nang.currentMessage, bubbleX - textWidth/2, bubbleY + 8);
+      ctx.font = 'bold 13px "Courier New", monospace';
+      ctx.fillText(nang.currentMessage, bubbleX - textWidth/2, bubbleY + 6);
       
       ctx.restore();
     }
     
-    // ----- HEARTS - ONLY BETWEEN THEM -----
+    // ----- HEARTS - BETWEEN THEM -----
     let distBetween = Math.hypot(monika.x - nang.x, monika.y - nang.y);
-    if (distBetween > TOO_CLOSE && distBetween < IDEAL_DISTANCE + 25 && Math.random() < 0.2) {
+    if (distBetween > TOO_CLOSE && distBetween < IDEAL_DISTANCE + 20 && Math.random() < 0.18) {
       ctx.save();
-      let heartX = (monika.x + nang.x) / 2 + (Math.random() - 0.5) * 30;
-      let heartY = (monika.y + nang.y) / 2 + (Math.random() - 0.5) * 25 - 5;
+      let heartX = (monika.x + nang.x) / 2 + (Math.random() - 0.5) * 20;
+      let heartY = (monika.y + nang.y) / 2 + (Math.random() - 0.5) * 18 - 5;
       ctx.translate(heartX, heartY);
-      ctx.font = '24px "Segoe UI", sans-serif';
+      ctx.font = '18px "Segoe UI", sans-serif';
       ctx.fillStyle = 'rgba(255, 130, 160, 0.85)';
-      ctx.shadowBlur = 20;
+      ctx.shadowBlur = 16;
       ctx.shadowColor = '#ff6f91';
-      ctx.fillText('❤️', -14, -14);
+      ctx.fillText('❤️', -10, -10);
       ctx.restore();
     }
     
@@ -494,9 +497,28 @@
     return this;
   };
 
-  drawPond();
+  // ----------  TOUCH SUPPORT FOR MOBILE ----------
+  function handleTouch(e) {
+    e.preventDefault();
+    let rect = canvas.getBoundingClientRect();
+    let touch = e.touches[0];
+    let scaleX = canvas.width / rect.width;
+    let scaleY = canvas.height / rect.height;
+    let canvasX = (touch.clientX - rect.left) * scaleX;
+    let canvasY = (touch.clientY - rect.top) * scaleY;
+    
+    // keep within bounds
+    canvasX = Math.min(Math.max(canvasX, 40), canvas.width - 40);
+    canvasY = Math.min(Math.max(canvasY, 40), canvas.height - 40);
+    
+    monika.targetX = canvasX;
+    monika.targetY = canvasY;
+  }
 
-  // click to guide monika
+  canvas.addEventListener('touchstart', handleTouch, { passive: false });
+  canvas.addEventListener('touchmove', handleTouch, { passive: false });
+  
+  // mouse support still works
   canvas.addEventListener('click', (e) => {
     let rect = canvas.getBoundingClientRect();
     let scaleX = canvas.width / rect.width;
@@ -507,6 +529,8 @@
     monika.targetX = canvasX;
     monika.targetY = canvasY;
   });
+
+  drawPond();
 
 </script>
 </body>
